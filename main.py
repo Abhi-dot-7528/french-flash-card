@@ -5,8 +5,14 @@ import random
 BACKGROUND_COLOR = "#B1DDC6"
 
 # ----------------- Read Data -----------------
-data = pandas.read_csv("data/french_words.csv")
-to_learn = data.to_dict(orient="records")
+to_learn = {}
+try:
+    data = pandas.read_csv("./data/remaining_words_to_learn.csv")
+except FileNotFoundError:
+    original_data = pandas.read_csv("./data/french_words.csv")
+    to_learn = original_data.to_dict(orient="records")
+else:
+    to_learn = data.to_dict(orient="records")
 
 # ----------------- CHANGE CARD FUNCTIONALITY -----------------
 current_card = {}
@@ -36,6 +42,19 @@ def flip_card():
     canvas.itemconfig(card_word_txt, text=current_card["English"], fill="white")
 
 
+# ----------------- WORDS I ALREADY KNOW -----------------
+
+def is_known():
+    """
+    This removes the words from data that you already know &
+    Creates a new CSV dataframe for the words that you have to learn.
+    """
+    to_learn.remove(current_card)
+    words_i_have_to_learn = pandas.DataFrame(to_learn)
+    words_i_have_to_learn.to_csv("./data/remaining_words_to_learn.csv", index=False)
+    next_card()
+
+
 # ----------------- UI SETUP -----------------
 window = Tk()
 window.title("Flash App")
@@ -62,7 +81,7 @@ dont_know_btn.grid(column=0, row=1)
 
 # Button - Check
 green_check_img = PhotoImage(file="./images/right.png")
-know_btn = Button(image=green_check_img, borderwidth=0, highlightthickness=0, command=next_card)
+know_btn = Button(image=green_check_img, borderwidth=0, highlightthickness=0, command=is_known)
 know_btn.grid(column=1, row=1)
 
 next_card()
